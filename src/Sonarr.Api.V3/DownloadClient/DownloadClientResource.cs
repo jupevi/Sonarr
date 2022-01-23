@@ -1,5 +1,7 @@
 ﻿using NzbDrone.Core.Download;
 using NzbDrone.Core.Indexers;
+using NzbDrone.Core.Tv;
+using System.Collections.Generic;
 
 namespace Sonarr.Api.V3.DownloadClient
 {
@@ -10,6 +12,7 @@ namespace Sonarr.Api.V3.DownloadClient
         public int Priority { get; set; }
         public bool RemoveCompletedDownloads { get; set; }
         public bool RemoveFailedDownloads { get; set; }
+        public HashSet<SeriesTypes> SeriesTypes { get; set; }
     }
 
     public class DownloadClientResourceMapper : ProviderResourceMapper<DownloadClientResource, DownloadClientDefinition>
@@ -25,6 +28,7 @@ namespace Sonarr.Api.V3.DownloadClient
             resource.Priority = definition.Priority;
             resource.RemoveCompletedDownloads = definition.RemoveCompletedDownloads;
             resource.RemoveFailedDownloads = definition.RemoveFailedDownloads;
+            resource.SeriesTypes = definition.SeriesTypes;
 
             return resource;
         }
@@ -40,6 +44,7 @@ namespace Sonarr.Api.V3.DownloadClient
             definition.Priority = resource.Priority;
             definition.RemoveCompletedDownloads = resource.RemoveCompletedDownloads;
             definition.RemoveFailedDownloads = resource.RemoveFailedDownloads;
+            definition.SeriesTypes = resource.SeriesTypes;
 
             return definition;
         }

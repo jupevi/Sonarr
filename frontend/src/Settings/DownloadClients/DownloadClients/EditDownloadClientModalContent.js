@@ -49,6 +49,7 @@ class EditDownloadClientModalContent extends Component {
       priority,
       removeCompletedDownloads,
       removeFailedDownloads,
+      seriesTypes,
       fields,
       message
     } = item;
@@ -134,6 +135,19 @@ class EditDownloadClientModalContent extends Component {
                     max={50}
                     {...priority}
                     onChange={onInputChange}
+                  />
+                </FormGroup>
+
+                <FormGroup>
+                  <FormLabel>Series Types</FormLabel>
+
+                  <FormInputGroup
+                    type={inputTypes.SERIES_TYPE_SELECT}
+                    name="seriesTypes"
+                    helpText="If any series types are selected, this download client can only be used to download those types."
+                    {...seriesTypes}
+                    onChange={onInputChange}
+                    multiple={true}
                   />
                 </FormGroup>
 
