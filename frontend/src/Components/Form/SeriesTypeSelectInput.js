@@ -14,7 +14,8 @@ function SeriesTypeSelectInput(props) {
 
   const {
     includeNoChange,
-    includeMixed
+    includeMixed,
+    multiple
   } = props;
 
   if (includeNoChange) {
@@ -37,18 +38,21 @@ function SeriesTypeSelectInput(props) {
     <SelectInput
       {...props}
       values={values}
+      style={{ "minHeight": "72px"}}
     />
   );
 }
 
 SeriesTypeSelectInput.propTypes = {
   includeNoChange: PropTypes.bool.isRequired,
-  includeMixed: PropTypes.bool.isRequired
+  includeMixed: PropTypes.bool.isRequired,
+  multiple: PropTypes.bool
 };
 
 SeriesTypeSelectInput.defaultProps = {
   includeNoChange: false,
-  includeMixed: false
+  includeMixed: false,
+  multiple: false
 };
 
 export default SeriesTypeSelectInput;
