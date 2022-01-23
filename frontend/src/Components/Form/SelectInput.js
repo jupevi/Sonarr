@@ -9,9 +9,10 @@ class SelectInput extends Component {
   // Listeners
 
   onChange = (event) => {
+    const selected = Array.from(event.target.selectedOptions, o => o.value);
     this.props.onChange({
       name: this.props.name,
-      value: event.target.value
+      value: this.props.multiple ? selected : (selected[0] ? selected[0] : ''),
     });
   }
 
@@ -29,7 +30,9 @@ class SelectInput extends Component {
       hasError,
       hasWarning,
       autoFocus,
-      onBlur
+      onBlur,
+      multiple,
+      style
     } = this.props;
 
     return (
@@ -46,6 +49,8 @@ class SelectInput extends Component {
         autoFocus={autoFocus}
         onChange={this.onChange}
         onBlur={onBlur}
+        multiple={multiple}
+        style={style}
       >
         {
           values.map((option) => {
@@ -73,9 +78,11 @@ class SelectInput extends Component {
 
 SelectInput.propTypes = {
   className: PropTypes.string,
+  style: PropTypes.object,
   disabledClassName: PropTypes.string,
   name: PropTypes.string.isRequired,
-  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  multiple: PropTypes.bool,
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.arrayOf(PropTypes.string), PropTypes.arrayOf(PropTypes.number)]).isRequired,
   values: PropTypes.arrayOf(PropTypes.object).isRequired,
   isDisabled: PropTypes.bool,
   hasError: PropTypes.bool,
@@ -89,7 +96,8 @@ SelectInput.defaultProps = {
   className: styles.select,
   disabledClassName: styles.isDisabled,
   isDisabled: false,
-  autoFocus: false
+  autoFocus: false,
+  multiple: false
 };
 
 export default SelectInput;
