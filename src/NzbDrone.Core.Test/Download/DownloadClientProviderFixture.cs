@@ -8,7 +8,9 @@ using Moq;
 using NUnit.Framework;
 using NzbDrone.Core.Download;
 using NzbDrone.Core.Indexers;
+using NzbDrone.Core.Parser.Model;
 using NzbDrone.Core.Test.Framework;
+using NzbDrone.Core.Tv;
 
 namespace NzbDrone.Core.Test.Download
 {
@@ -35,7 +37,22 @@ namespace NzbDrone.Core.Test.Download
                   .Returns(_blockedProviders);
         }
 
-        private Mock<IDownloadClient> WithUsenetClient(int priority = 0)
+        private RemoteEpisode CreateRemoteEpisode(DownloadProtocol downloadProtocol, SeriesTypes seriesType = SeriesTypes.Standard)
+        {
+            return new RemoteEpisode()
+            {
+                Release = new ReleaseInfo()
+                {
+                    DownloadProtocol = downloadProtocol,
+                },
+                Series = new Series()
+                {
+                    SeriesType = seriesType,
+                }
+            };
+        }
+
+        private Mock<IDownloadClient> WithUsenetClient(int priority = 0, HashSet<SeriesTypes> seriesTypes = null)
         {
             var mock = new Mock<IDownloadClient>(MockBehavior.Default);
             mock.SetupGet(s => s.Definition)
@@ -43,6 +60,7 @@ namespace NzbDrone.Core.Test.Download
                     .CreateNew()
                     .With(v => v.Id = _nextId++)
                     .With(v => v.Priority = priority)
+                    .With(v => v.SeriesTypes = seriesTypes ?? new HashSet<SeriesTypes>())
                     .Build());
 
             _downloadClients.Add(mock.Object);
@@ -52,7 +70,7 @@ namespace NzbDrone.Core.Test.Download
             return mock;
         }
 
-        private Mock<IDownloadClient> WithTorrentClient(int priority = 0)
+        private Mock<IDownloadClient> WithTorrentClient(int priority = 0, HashSet<SeriesTypes> seriesTypes = null)
         {
             var mock = new Mock<IDownloadClient>(MockBehavior.Default);
             mock.SetupGet(s => s.Definition)
@@ -60,6 +78,7 @@ namespace NzbDrone.Core.Test.Download
                     .CreateNew()
                     .With(v => v.Id = _nextId++)
                     .With(v => v.Priority = priority)
+                    .With(v => v.SeriesTypes = seriesTypes ?? new HashSet<SeriesTypes>())
                     .Build());
 
             _downloadClients.Add(mock.Object);
@@ -86,11 +105,12 @@ namespace NzbDrone.Core.Test.Download
             WithUsenetClient();
             WithTorrentClient();
 
-            var client1 = Subject.GetDownloadClient(DownloadProtocol.Usenet);
-            var client2 = Subject.GetDownloadClient(DownloadProtocol.Usenet);
-            var client3 = Subject.GetDownloadClient(DownloadProtocol.Usenet);
-            var client4 = Subject.GetDownloadClient(DownloadProtocol.Usenet);
-            var client5 = Subject.GetDownloadClient(DownloadProtocol.Usenet);
+            var remoteEpisode = CreateRemoteEpisode(DownloadProtocol.Usenet);
+            var client1 = Subject.GetDownloadClient(remoteEpisode);
+            var client2 = Subject.GetDownloadClient(remoteEpisode);
+            var client3 = Subject.GetDownloadClient(remoteEpisode);
+            var client4 = Subject.GetDownloadClient(remoteEpisode);
+            var client5 = Subject.GetDownloadClient(remoteEpisode);
 
             client1.Definition.Id.Should().Be(1);
             client2.Definition.Id.Should().Be(2);
@@ -107,11 +127,12 @@ namespace NzbDrone.Core.Test.Download
             WithTorrentClient();
             WithTorrentClient();
 
-            var client1 = Subject.GetDownloadClient(DownloadProtocol.Torrent);
-            var client2 = Subject.GetDownloadClient(DownloadProtocol.Torrent);
-            var client3 = Subject.GetDownloadClient(DownloadProtocol.Torrent);
-            var client4 = Subject.GetDownloadClient(DownloadProtocol.Torrent);
-            var client5 = Subject.GetDownloadClient(DownloadProtocol.Torrent);
+            var remoteEpisode = CreateRemoteEpisode(DownloadProtocol.Torrent);
+            var client1 = Subject.GetDownloadClient(remoteEpisode);
+            var client2 = Subject.GetDownloadClient(remoteEpisode);
+            var client3 = Subject.GetDownloadClient(remoteEpisode);
+            var client4 = Subject.GetDownloadClient(remoteEpisode);
+            var client5 = Subject.GetDownloadClient(remoteEpisode);
 
             client1.Definition.Id.Should().Be(2);
             client2.Definition.Id.Should().Be(3);
@@ -127,10 +148,12 @@ namespace NzbDrone.Core.Test.Download
             WithTorrentClient();
             WithTorrentClient();
 
-            var client1 = Subject.GetDownloadClient(DownloadProtocol.Usenet);
-            var client2 = Subject.GetDownloadClient(DownloadProtocol.Torrent);
-            var client3 = Subject.GetDownloadClient(DownloadProtocol.Torrent);
-            var client4 = Subject.GetDownloadClient(DownloadProtocol.Torrent);
+            var remoteEpisodeUsenet = CreateRemoteEpisode(DownloadProtocol.Usenet);
+            var remoteEpisodeTorrent = CreateRemoteEpisode(DownloadProtocol.Torrent);
+            var client1 = Subject.GetDownloadClient(remoteEpisodeUsenet);
+            var client2 = Subject.GetDownloadClient(remoteEpisodeTorrent);
+            var client3 = Subject.GetDownloadClient(remoteEpisodeTorrent);
+            var client4 = Subject.GetDownloadClient(remoteEpisodeTorrent);
 
             client1.Definition.Id.Should().Be(1);
             client2.Definition.Id.Should().Be(2);
@@ -148,11 +171,11 @@ namespace NzbDrone.Core.Test.Download
 
             GivenBlockedClient(3);
 
-            var client1 = Subject.GetDownloadClient(DownloadProtocol.Torrent);
-            var client2 = Subject.GetDownloadClient(DownloadProtocol.Torrent);
-            var client3 = Subject.GetDownloadClient(DownloadProtocol.Torrent);
-            var client4 = Subject.GetDownloadClient(DownloadProtocol.Torrent);
-            var client5 = Subject.GetDownloadClient(DownloadProtocol.Torrent);
+            var remoteEpisode = CreateRemoteEpisode(DownloadProtocol.Torrent);
+            var client1 = Subject.GetDownloadClient(remoteEpisode);
+            var client2 = Subject.GetDownloadClient(remoteEpisode);
+            var client3 = Subject.GetDownloadClient(remoteEpisode);
+            var client4 = Subject.GetDownloadClient(remoteEpisode);
 
             client1.Definition.Id.Should().Be(2);
             client2.Definition.Id.Should().Be(4);
@@ -172,11 +195,11 @@ namespace NzbDrone.Core.Test.Download
             GivenBlockedClient(3);
             GivenBlockedClient(4);
 
-            var client1 = Subject.GetDownloadClient(DownloadProtocol.Torrent);
-            var client2 = Subject.GetDownloadClient(DownloadProtocol.Torrent);
-            var client3 = Subject.GetDownloadClient(DownloadProtocol.Torrent);
-            var client4 = Subject.GetDownloadClient(DownloadProtocol.Torrent);
-            var client5 = Subject.GetDownloadClient(DownloadProtocol.Torrent);
+            var remoteEpisode = CreateRemoteEpisode(DownloadProtocol.Torrent);
+            var client1 = Subject.GetDownloadClient(remoteEpisode);
+            var client2 = Subject.GetDownloadClient(remoteEpisode);
+            var client3 = Subject.GetDownloadClient(remoteEpisode);
+            var client4 = Subject.GetDownloadClient(remoteEpisode);
 
             client1.Definition.Id.Should().Be(2);
             client2.Definition.Id.Should().Be(3);
@@ -192,11 +215,11 @@ namespace NzbDrone.Core.Test.Download
             WithTorrentClient();
             WithTorrentClient();
 
-            var client1 = Subject.GetDownloadClient(DownloadProtocol.Torrent);
-            var client2 = Subject.GetDownloadClient(DownloadProtocol.Torrent);
-            var client3 = Subject.GetDownloadClient(DownloadProtocol.Torrent);
-            var client4 = Subject.GetDownloadClient(DownloadProtocol.Torrent);
-            var client5 = Subject.GetDownloadClient(DownloadProtocol.Torrent);
+            var remoteEpisode = CreateRemoteEpisode(DownloadProtocol.Torrent);
+            var client1 = Subject.GetDownloadClient(remoteEpisode);
+            var client2 = Subject.GetDownloadClient(remoteEpisode);
+            var client3 = Subject.GetDownloadClient(remoteEpisode);
+            var client4 = Subject.GetDownloadClient(remoteEpisode);
 
             client1.Definition.Id.Should().Be(3);
             client2.Definition.Id.Should().Be(4);
@@ -214,16 +237,58 @@ namespace NzbDrone.Core.Test.Download
 
             GivenBlockedClient(4);
 
-            var client1 = Subject.GetDownloadClient(DownloadProtocol.Torrent);
-            var client2 = Subject.GetDownloadClient(DownloadProtocol.Torrent);
-            var client3 = Subject.GetDownloadClient(DownloadProtocol.Torrent);
-            var client4 = Subject.GetDownloadClient(DownloadProtocol.Torrent);
-            var client5 = Subject.GetDownloadClient(DownloadProtocol.Torrent);
+            var remoteEpisode = CreateRemoteEpisode(DownloadProtocol.Torrent);
+            var client1 = Subject.GetDownloadClient(remoteEpisode);
+            var client2 = Subject.GetDownloadClient(remoteEpisode);
+            var client3 = Subject.GetDownloadClient(remoteEpisode);
+            var client4 = Subject.GetDownloadClient(remoteEpisode);
 
             client1.Definition.Id.Should().Be(2);
             client2.Definition.Id.Should().Be(3);
             client3.Definition.Id.Should().Be(2);
             client4.Definition.Id.Should().Be(3);
+        }
+
+        [Test]
+        public void should_filter_clients_by_series_types()
+        {
+            WithTorrentClient(0, new HashSet<SeriesTypes>() { SeriesTypes.Standard });
+            WithTorrentClient(0, new HashSet<SeriesTypes>() { SeriesTypes.Anime });
+            WithTorrentClient(0, new HashSet<SeriesTypes>() { SeriesTypes.Daily });
+
+            GivenBlockedClient(4);
+
+            var standardClient = Subject.GetDownloadClient(CreateRemoteEpisode(DownloadProtocol.Torrent, SeriesTypes.Standard));
+            var animeClient = Subject.GetDownloadClient(CreateRemoteEpisode(DownloadProtocol.Torrent, SeriesTypes.Anime));
+            var dailyClient = Subject.GetDownloadClient(CreateRemoteEpisode(DownloadProtocol.Torrent, SeriesTypes.Daily));
+
+            standardClient.Definition.Id.Should().Be(1);
+            animeClient.Definition.Id.Should().Be(2);
+            dailyClient.Definition.Id.Should().Be(3);
+        }
+
+        [Test]
+        public void should_skip_download_clients_without_series_types_if_better_available()
+        {
+            WithTorrentClient(0);
+            WithTorrentClient(0, new HashSet<SeriesTypes>() { SeriesTypes.Anime });
+            WithTorrentClient(0, new HashSet<SeriesTypes>() { SeriesTypes.Anime, SeriesTypes.Daily });
+
+            GivenBlockedClient(4);
+
+            var client1 = Subject.GetDownloadClient(CreateRemoteEpisode(DownloadProtocol.Torrent, SeriesTypes.Anime));
+            var client2 = Subject.GetDownloadClient(CreateRemoteEpisode(DownloadProtocol.Torrent, SeriesTypes.Daily));
+            var client3 = Subject.GetDownloadClient(CreateRemoteEpisode(DownloadProtocol.Torrent, SeriesTypes.Daily));
+            var client4 = Subject.GetDownloadClient(CreateRemoteEpisode(DownloadProtocol.Torrent, SeriesTypes.Anime));
+            var client5 = Subject.GetDownloadClient(CreateRemoteEpisode(DownloadProtocol.Torrent, SeriesTypes.Anime));
+            var client6 = Subject.GetDownloadClient(CreateRemoteEpisode(DownloadProtocol.Torrent, SeriesTypes.Standard));
+
+            client1.Definition.Id.Should().Be(2);
+            client2.Definition.Id.Should().Be(3);
+            client3.Definition.Id.Should().Be(3);
+            client4.Definition.Id.Should().Be(2);
+            client5.Definition.Id.Should().Be(3);
+            client6.Definition.Id.Should().Be(1);
         }
     }
 }
